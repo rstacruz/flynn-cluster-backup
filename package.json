@@ -1,7 +1,7 @@
 {
   "name": "flynn-cluster-backup",
   "description": "Backs up your flynn cluster configuration",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": "Rico Sta. Cruz <rico@ricostacruz.com>",
   "bin": {
     "flynn-cluster-backup": "bin/flynn-cluster-backup"
