@@ -1,4 +1,4 @@
-var fb = require('../bin/flynn-backup')
+var fb = require('../bin/flynn-cluster-backup')
 describe('my project', function () {
   it('works', function () {
     var config = [
