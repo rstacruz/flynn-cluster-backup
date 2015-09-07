@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var fs = require('fs')
 var home = require('home')
+var assign = require('object-assign')
 
 function work () {
   var argv = require('yargs').argv
@@ -8,9 +9,10 @@ function work () {
   var configPath = home.resolve(configPath)
   var raw = fs.readFileSync(configPath, 'utf-8')
   var config = parseConfig(raw)
-  var commands = toCommands(config)
+  var commands = toCommands(config, {
+    multiline: argv.m || argv.multiline
+  })
 
-  console.log("#!/usr/bin/env sh")
   console.log(commands.join('\n'))
 }
 
@@ -28,11 +30,11 @@ if (!module.parent) {
  * Returns an array of commands for a given `config`
  */
 
-function toCommands (config) {
+function toCommands (config, options) {
   return config.clusters.map(function (cluster) {
-    return toCommand(cluster, {
+    return toCommand(cluster, assign({}, options, {
       default: config.meta.default === cluster.Name
-    })
+    }))
   })
 }
 
@@ -50,32 +52,37 @@ function toCommands (config) {
  */
 
 function toCommand (cluster, options) {
-  var cmd = 'flynn cluster add --force'
+  var cmd = ['flynn cluster add --force']
   if (options.default) {
-    cmd += ' --default'
+    cmd[0] += ' --default'
   }
   if (cluster.GitHost) {
     // `abcd.flynnhub.com:2222` (old)
-    cmd += ' --git-host ' + s(cluster.GitHost)
+    cmd.push('--git-host ' + s(cluster.GitHost))
   }
   if (cluster.GitURL) {
     // `https://git.abcd.flynnhub.com`
-    cmd += ' --git-url ' + s(cluster.GitURL)
+    cmd.push('--git-url ' + s(cluster.GitURL))
   }
   if (cluster.TLSPin) {
-    cmd += ' -p ' + s(cluster.TLSPin)
+    cmd.push('-p ' + s(cluster.TLSPin))
   }
-  cmd += ' ' + s(cluster.Name)
+  cmd.push(s(cluster.Name))
   if (cluster.Domain) {
-    cmd += ' ' + s(cluster.Domain)
+    cmd.push(s(cluster.Domain))
   } else if (cluster.ControllerURL) {
-    cmd += ' ' + s(cluster.ControllerURL.replace(/^https:\/\/controller\./, ''))
+    cmd.push(s(cluster.ControllerURL.replace(/^https:\/\/controller\./, '')))
   } else if (cluster.URL) {
     // old versions
-    cmd += ' ' + s(cluster.URL.replace(/^https:\/\/controller\./, ''))
+    cmd.push(s(cluster.URL.replace(/^https:\/\/controller\./, '')))
   }
-  cmd += ' ' + s(cluster.Key)
-  return cmd
+  cmd.push(s(cluster.Key))
+
+  if (options.multiline) {
+    return cmd.join(' \\\n  ')
+  } else {
+    return cmd.join(' ')
+  }
 }
 
 /**
