@@ -55,10 +55,8 @@ function toCommand (cluster, options) {
     cmd += ' --default'
   }
   if (cluster.GitHost) {
+    // Can be `abcd.flynnhub.com:2222` (old) or `https://git.abcd.flynnhub.com`
     cmd += ' --git-host ' + s(cluster.GitHost)
-  }
-  if (cluster.GitUrl) {
-    cmd += ' --git-url ' + s(cluster.GitUrl)
   }
   if (cluster.TLSPin) {
     cmd += ' -p ' + s(cluster.TLSPin)
@@ -66,8 +64,11 @@ function toCommand (cluster, options) {
   cmd += ' ' + s(cluster.Name)
   if (cluster.Domain) {
     cmd += ' ' + s(cluster.Domain)
-  } else {
+  } else if (cluster.ControllerURL) {
     cmd += ' ' + s(cluster.ControllerURL.replace(/^https:\/\/controller\./, ''))
+  } else if (cluster.URL) {
+    // old versions
+    cmd += ' ' + s(cluster.URL.replace(/^https:\/\/controller\./, ''))
   }
   cmd += ' ' + s(cluster.Key)
   return cmd
