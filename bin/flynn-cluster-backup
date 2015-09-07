@@ -55,8 +55,12 @@ function toCommand (cluster, options) {
     cmd += ' --default'
   }
   if (cluster.GitHost) {
-    // Can be `abcd.flynnhub.com:2222` (old) or `https://git.abcd.flynnhub.com`
+    // `abcd.flynnhub.com:2222` (old)
     cmd += ' --git-host ' + s(cluster.GitHost)
+  }
+  if (cluster.GitURL) {
+    // `https://git.abcd.flynnhub.com`
+    cmd += ' --git-url ' + s(cluster.GitURL)
   }
   if (cluster.TLSPin) {
     cmd += ' -p ' + s(cluster.TLSPin)
