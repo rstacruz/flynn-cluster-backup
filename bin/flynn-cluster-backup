@@ -5,6 +5,23 @@ var assign = require('object-assign')
 
 function work () {
   var argv = require('yargs').argv
+  if (argv.h || argv.help) {
+    help()
+  } else if (argv.v || argv.version) {
+    console.log(require('../package.json').version)
+  } else {
+    run(argv)
+  }
+}
+
+function help () {
+  console.log('Usage: flynn-cluster-backup [-m] [<file>]')
+  console.log('')
+  console.log('Options:')
+  console.log('  -m, --multiline   prettify output by adding line breaks')
+}
+
+function run (argv) {
   var configPath = argv._.length > 0 ? argv._[0] : '~/.flynnrc'
   var configPath = home.resolve(configPath)
   var raw = fs.readFileSync(configPath, 'utf-8')
