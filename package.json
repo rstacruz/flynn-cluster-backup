@@ -1,0 +1,25 @@
+{
+  "name": "flynnbackup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "bin": {
+    "flynn-backup": "bin/flynn-backup"
+  },
+  "dependencies": {
+    "home": "^0.1.8",
+    "ini": "^1.3.4",
+    "yargs": "^3.24.0"
+  },
+  "devDependencies": {
+    "expect": "^1.9.0",
+    "mocha": "^2.3.0",
+    "mocha-standard": "^1.0.0",
+    "standard": "^5.2.1"
+  }
+}

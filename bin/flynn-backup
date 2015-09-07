@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+var fs = require('fs')
+var home = require('home')
+
+function work () {
+  var argv = require('yargs').argv
+  var configPath = argv._.length > 0 ? argv._[0] : '~/.flynnrc'
+  var configPath = home.resolve(configPath)
+  var raw = fs.readFileSync(configPath, 'utf-8')
+  var config = parseConfig(raw)
+  var commands = toCommands(config)
+
+  console.log("#!/usr/bin/env sh")
+  console.log(commands.join('\n'))
+}
+
+if (!module.parent) {
+  work()
+} else {
+  module.exports = {
+    toCommands: toCommands,
+    toCommand: toCommand,
+    parseConfig: parseConfig
+  }
+}
+
+/**
+ * Returns an array of commands for a given `config`
+ */
+
+function toCommands (config) {
+  return config.clusters.map(function (cluster) {
+    return toCommand(cluster, {
+      default: config.meta.default === cluster.Name
+    })
+  })
+}
+
+/**
+ * Serializes a cluster to a shell command
+ *
+ *     cluster = {
+ *       Name: 'flynn-144',
+ *       ControllerURL: 'https://controller.xyza.flynnhub.com',
+ *       ...
+ *     }
+ *
+ *     toCommand(cluster, { default: true })
+ *     //=> "flynn cluster add --force --default flynn-144 xyza.flynnhub.com
+ */
+
+function toCommand (cluster, options) {
+  var cmd = 'flynn cluster add --force'
+  if (options.default) {
+    cmd += ' --default'
+  }
+  if (cluster.GitHost) {
+    cmd += ' --git-host ' + s(cluster.GitHost)
+  }
+  if (cluster.GitUrl) {
+    cmd += ' --git-url ' + s(cluster.GitUrl)
+  }
+  if (cluster.TLSPin) {
+    cmd += ' -p ' + s(cluster.TLSPin)
+  }
+  cmd += ' ' + s(cluster.Name)
+  if (cluster.Domain) {
+    cmd += ' ' + s(cluster.Domain)
+  } else {
+    cmd += ' ' + s(cluster.ControllerURL.replace(/^https:\/\/controller\./, ''))
+  }
+  cmd += ' ' + s(cluster.Key)
+  return cmd
+}
+
+/**
+ * Returns a configuration object from the raw data of `~/.flynnrc`
+ *
+ *     {
+ *       meta: {
+ *         default: 'flynn-144'
+ *       }
+ *       clusters: [
+ *         {
+ *           Name: 'flynn-144',
+ *           ControllerURL: 'https://controller.xyza.flynnhub.com',
+ *           ...
+ *         }
+ *       ]
+ *     }
+ */
+
+function parseConfig (raw) {
+  var config = {
+    clusters: [],
+    meta: {}
+  }
+
+  var cluster, m
+  raw.split('\n').forEach(function (line) {
+    if (line === '[[cluster]]') {
+      cluster = {}
+      config.clusters.push(cluster)
+    } else if (m = line.match(/^\s*([^=]+) = (.*)$/)) {
+      var key = m[1]
+      var value = JSON.parse(m[2])
+      if (cluster) {
+        cluster[key] = value
+      } else {
+        config.meta[key] = value
+      }
+    }
+  })
+
+  return config
+}
+
+/*
+ * Quotes a string for shell usage
+ */
+
+function s (string) {
+  if (typeof string === 'string' && /^[a-zA-Z\.0-9\-]+$/.test(string)) {
+    return string
+  } else {
+    return JSON.stringify(string)
+  }
+}
