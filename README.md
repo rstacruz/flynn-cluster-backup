@@ -19,7 +19,7 @@ default = flynn-1234
 Gives this output:
 
 ```sh
-$ flynn-backup
+$ flynn-cluster-backup
 flynn cluster add --force --default \
   --git-host "https://git.abcd.flynnhub.com" \
   -p "pinpin+" flynn-1234 abcd.flynnhub.com deadbeef
