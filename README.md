@@ -1,6 +1,6 @@
 # flynn-cluster-backup
 
-Simple tool to backup your ~/.flynnrc clusters. (`npm i -g rstacruz/flynn-cluster-backup`)
+Simple tool to backup your ~/.flynnrc cluster configuration. (`npm i -g rstacruz/flynn-cluster-backup`)
 
 Given this config file (`~/.flynnrc`):
 
